@@ -26,7 +26,7 @@ public class APITest {
 	public static void main(String[] args) {
 
 		if (args.length == 0) {
-			System.out.println("Usage : VerseB exRate|exReq|OutAddrVerify|OutPaswordReg|WithdrawReq|StatusReq");
+			System.out.println("Usage : VerseB exRate|passportRegister|passportChange|exReq|WithdrawalAddress|WithdrawReq|StatusReq");
 			return;
 		}
 
@@ -55,9 +55,82 @@ public class APITest {
 				System.out.println(hmOut);
 				if ("SUCCESS".equals(hmOut.get("status"))) {
 					// 정상 처리 응답 수신
-					String exRate	= hmOut.get("exRate");
+					String exRate	= hmOut.get("exchangeRate");
 					String toAmount	= hmOut.get("toAmount");
-					System.out.println("exRate="+exRate+" toAmount="+toAmount);
+					System.out.println("exchangeRate"+exRate+" toAmount="+toAmount);
+				} else {
+					// 오류 처리 응답 수신
+					String errCd	= hmOut.get("errorInformation.errCd");
+					String reason	= hmOut.get("errorInformation.reason");
+					System.out.println("errCd="+errCd+" reason="+reason);
+				}
+				return;
+			// Passport Register
+			case "passportRegister" :
+				// 파라메터 설정
+				hmIn.put("merchantInformation.merchantId",			"000000000001");
+				hmIn.put("merchantInformation.merchantSiteId",		"000001");
+				hmIn.put("customerId",								"000000000001");
+				hmIn.put("PassportOption",							"Register");
+				hmIn.put("newPassword",								"12345678");
+				hmIn.put("key",										"9F2488BFAE5FB03B9B483FA1CF1EC94B3B4B2E52780A2B53ED67E581110CC980");
+				hmIn.put("initialVector",							"64750805549512089392625993734535");
+
+				// API 호출
+				hmOut							= VerseB.Passport(hmIn);
+				System.out.println(hmOut);
+				if ("SUCCESS".equals(hmOut.get("status"))) {
+					// 정상 처리 응답 수신
+					String Papers= hmOut.get("Papers");
+					System.out.println("Papers="+Papers);
+				} else {
+					// 오류 처리 응답 수신
+					String errCd	= hmOut.get("errorInformation.errCd");
+					String reason	= hmOut.get("errorInformation.reason");
+					System.out.println("errCd="+errCd+" reason="+reason);
+				}
+				return;
+			// Passport Register
+			case "passportChange" :
+				// 파라메터 설정
+				hmIn.put("merchantInformation.merchantId",			"000000000001");
+				hmIn.put("merchantInformation.merchantSiteId",		"000001");
+				hmIn.put("customerId",								"000000000001");
+				hmIn.put("PassportOption",							"Certify");
+				hmIn.put("outPassword",								"12345678");
+				hmIn.put("key",										"9F2488BFAE5FB03B9B483FA1CF1EC94B3B4B2E52780A2B53ED67E581110CC980");
+				hmIn.put("initialVector",							"64750805549512089392625993734535");
+
+				// API 호출 - Certify
+				hmOut							= VerseB.Passport(hmIn);
+				System.out.println(hmOut);
+				if ("SUCCESS".equals(hmOut.get("status"))) {
+					// 정상 처리 응답 수신
+					String Papers= hmOut.get("Papers");
+					hmIn.clear();
+					hmIn.put("merchantInformation.merchantId",		"000000000001");
+					hmIn.put("merchantInformation.merchantSiteId",	"000001");
+					hmIn.put("customerId",							"000000000001");
+					hmIn.put("PassportOption",						"Change");
+					hmIn.put("outPassword",							"12345678");
+					hmIn.put("newPassword",							"12345678");
+					hmIn.put("Papers",								Papers);
+					hmIn.put("key",									"9F2488BFAE5FB03B9B483FA1CF1EC94B3B4B2E52780A2B53ED67E581110CC980");
+					hmIn.put("initialVector",						"64750805549512089392625993734535");
+
+					// API 호출 - Change
+					hmOut							= VerseB.Passport(hmIn);
+					System.out.println(hmOut);
+					if ("SUCCESS".equals(hmOut.get("status"))) {
+						// 정상 처리 응답 수신
+						Papers = hmOut.get("Papers");
+						System.out.println("Papers="+Papers);
+					} else {
+						// 오류 처리 응답 수신
+						String errCd	= hmOut.get("errorInformation.errCd");
+						String reason	= hmOut.get("errorInformation.reason");
+						System.out.println("errCd="+errCd+" reason="+reason);
+					}
 				} else {
 					// 오류 처리 응답 수신
 					String errCd	= hmOut.get("errorInformation.errCd");
@@ -67,25 +140,50 @@ public class APITest {
 				return;
 			// Exchange
 			case "exReq" :
-				// 파라메터 설정
+				// Passport 호출
 				hmIn.put("merchantInformation.merchantId",			"000000000001");
 				hmIn.put("merchantInformation.merchantSiteId",		"000001");
 				hmIn.put("customerId",								"000000000001");
-				hmIn.put("fromCurrency",							"GOLD");
-				hmIn.put("toCurrency",								"SLAYB");
-				hmIn.put("fromAmount",								"100");
-				hmIn.put("exchangeRate",							"10%");
-				hmIn.put("notifyUrl",								"http://10.30.1.51:8180/p2e/AsyncResult.jsp");
+				hmIn.put("PassportOption",							"Certify");
+				hmIn.put("outPassword",								"12345678");
 				hmIn.put("key",										"9F2488BFAE5FB03B9B483FA1CF1EC94B3B4B2E52780A2B53ED67E581110CC980");
 				hmIn.put("initialVector",							"64750805549512089392625993734535");
 
-				// API 호출
-				hmOut							= VerseB.exReq(hmIn);
+				// API 호출 - Certify
+				hmOut							= VerseB.Passport(hmIn);
 				System.out.println(hmOut);
+
 				if ("SUCCESS".equals(hmOut.get("status"))) {
 					// 정상 처리 응답 수신
-					String txId	= hmOut.get("txId");
-					System.out.println("txId="+txId);
+					String Papers= hmOut.get("Papers");
+					hmIn.clear();
+					// exchange 호출
+					hmIn.put("merchantInformation.merchantId",		"000000000001");
+					hmIn.put("merchantInformation.merchantSiteId",	"000001");
+					hmIn.put("customerId",							"000000000001");
+					hmIn.put("fromCurrency",						"GOLD");
+					hmIn.put("toCurrency",							"SLAYB");
+					hmIn.put("fromAmount",							"100");
+					hmIn.put("exchangeRate",						"10%");
+					hmIn.put("outPassword",							"12345678");
+					hmIn.put("Papers",								Papers);
+					hmIn.put("notifyUrl",							"http://10.30.1.51:8180/p2e/AsyncResult.jsp");
+					hmIn.put("key",									"9F2488BFAE5FB03B9B483FA1CF1EC94B3B4B2E52780A2B53ED67E581110CC980");
+					hmIn.put("initialVector",						"64750805549512089392625993734535");
+
+					// API 호출
+					hmOut							= VerseB.exReq(hmIn);
+					System.out.println(hmOut);
+
+					if ("SUCCESS".equals(hmOut.get("status"))) {
+						String txId	= hmOut.get("txId");
+						System.out.println("txId="+txId);
+					} else {
+						// 오류 처리 응답 수신
+						String errCd	= hmOut.get("errorInformation.errCd");
+						String reason	= hmOut.get("errorInformation.reason");
+						System.out.println("errCd="+errCd+" reason="+reason);
+					}
 				} else {
 					// 오류 처리 응답 수신
 					String errCd	= hmOut.get("errorInformation.errCd");
@@ -93,45 +191,47 @@ public class APITest {
 					System.out.println("errCd="+errCd+" reason="+reason);
 				}
 				return;
-			// OutAddrVerify
-			case "OutAddrVerify" :
-				// 파라메터 설정
+			// WithdrawalAddress
+			case "WithdrawalAddress" :
+				// Passport 호출
 				hmIn.put("merchantInformation.merchantId",			"000000000001");
 				hmIn.put("merchantInformation.merchantSiteId",		"000001");
 				hmIn.put("customerId",								"000000000001");
-				hmIn.put("outAddress",								"0x8bDfa1f6393146f005F1C84050c553367c1e27d2");
+				hmIn.put("PassportOption",							"Certify");
+				hmIn.put("outPassword",								"12345678");
 				hmIn.put("key",										"9F2488BFAE5FB03B9B483FA1CF1EC94B3B4B2E52780A2B53ED67E581110CC980");
 				hmIn.put("initialVector",							"64750805549512089392625993734535");
 
-				// API 호출
-				hmOut							= VerseB.OutAddrVerify(hmIn);
+				// API 호출 - Certify
+				hmOut							= VerseB.PreTradeReq(hmIn);
 				System.out.println(hmOut);
-				if ("SUCCESS".equals(hmOut.get("status"))) {
-					// 정상 처리 응답 수신
-					System.out.println("Recv Success");
-				} else {
-					// 오류 처리 응답 수신
-					String errCd	= hmOut.get("errorInformation.errCd");
-					String reason	= hmOut.get("errorInformation.reason");
-					System.out.println("errCd="+errCd+" reason="+reason);
-				}
-				return;
-			case "OutPaswordReg" :
-				// 파라메터 설정
-				hmIn.put("merchantInformation.merchantId",			"000000000001");
-				hmIn.put("merchantInformation.merchantSiteId",		"000001");
-				hmIn.put("customerId",								"000000000001");
-				hmIn.put("outAddress",								"0x8bDfa1f6393146f005F1C84050c553367c1e27d2");
-				hmIn.put("outPassword",								"Q!w2e3r4");
-				hmIn.put("key",										"9F2488BFAE5FB03B9B483FA1CF1EC94B3B4B2E52780A2B53ED67E581110CC980");
-				hmIn.put("initialVector",							"64750805549512089392625993734535");
 
-				// API 호출
-				hmOut							= VerseB.OutPaswordReg(hmIn);
-				System.out.println(hmOut);
 				if ("SUCCESS".equals(hmOut.get("status"))) {
 					// 정상 처리 응답 수신
-					System.out.println("Recv Success");
+					String Papers= hmOut.get("Papers");
+					hmIn.clear();
+					// 파라메터 설정
+					hmIn.put("merchantInformation.merchantId",		"000000000001");
+					hmIn.put("merchantInformation.merchantSiteId",	"000001");
+					hmIn.put("customerId",							"000000000001");
+					hmIn.put("outAddress",							"0x8bDfa1f6393146f005F1C84050c553367c1e27d2");
+					hmIn.put("outPassword",							"12345678");
+					hmIn.put("Papers",								Papers);
+					hmIn.put("key",									"9F2488BFAE5FB03B9B483FA1CF1EC94B3B4B2E52780A2B53ED67E581110CC980");
+					hmIn.put("initialVector",						"64750805549512089392625993734535");
+
+					// API 호출
+					hmOut							= VerseB.OutAddrVerify(hmIn);
+					System.out.println(hmOut);
+					if ("SUCCESS".equals(hmOut.get("status"))) {
+						// 정상 처리 응답 수신
+						System.out.println("Recv Success");
+					} else {
+						// 오류 처리 응답 수신
+						String errCd	= hmOut.get("errorInformation.errCd");
+						String reason	= hmOut.get("errorInformation.reason");
+						System.out.println("errCd="+errCd+" reason="+reason);
+					}
 				} else {
 					// 오류 처리 응답 수신
 					String errCd	= hmOut.get("errorInformation.errCd");
@@ -140,26 +240,74 @@ public class APITest {
 				}
 				return;
 			case "WithdrawReq" :
-				// 파라메터 설정
+				// PreTrade
 				hmIn.put("merchantInformation.merchantId",			"000000000001");
 				hmIn.put("merchantInformation.merchantSiteId",		"000001");
 				hmIn.put("customerId",								"000000000001");
-				hmIn.put("outAddress",								"0x8bDfa1f6393146f005F1C84050c553367c1e27d2");
-				hmIn.put("outPassword",								"Q!w2e3r4");
 				hmIn.put("fromCurrency",							"SLAYB");
 				hmIn.put("toCurrency",								"SLAYB");
 				hmIn.put("fromAmount",								"10");
-				hmIn.put("notifyUrl",								"http://10.30.1.51:8180/p2e/AsyncResult.jsp");
 				hmIn.put("key",										"9F2488BFAE5FB03B9B483FA1CF1EC94B3B4B2E52780A2B53ED67E581110CC980");
 				hmIn.put("initialVector",							"64750805549512089392625993734535");
 
 				// API 호출
-				hmOut							= VerseB.WithdrawReq(hmIn);
+				hmOut							= VerseB.PreTradeReq(hmIn);
 				System.out.println(hmOut);
 				if ("SUCCESS".equals(hmOut.get("status"))) {
 					// 정상 처리 응답 수신
-					String txId		= hmOut.get("txId");
-					System.out.println("txId="+txId);
+					hmIn.clear();
+					hmIn.put("merchantInformation.merchantId",		"000000000001");
+					hmIn.put("merchantInformation.merchantSiteId",	"000001");
+					hmIn.put("customerId",							"000000000001");
+					hmIn.put("PassportOption",						"Certify");
+					hmIn.put("outPassword",							"12345678");
+					hmIn.put("key",									"9F2488BFAE5FB03B9B483FA1CF1EC94B3B4B2E52780A2B53ED67E581110CC980");
+					hmIn.put("initialVector",						"64750805549512089392625993734535");
+
+					// API 호출 - Certify
+					HashMap<String, String> hmOut2					= VerseB.Passport(hmIn);
+					System.out.println(hmOut2);
+					if ("SUCCESS".equals(hmOut2.get("status"))) {
+						// 정상 처리 응답 수신
+						String Papers= hmOut2.get("Papers");
+						hmIn.clear();
+
+						hmIn.put("merchantInformation.merchantId",	"000000000001");
+						hmIn.put("merchantInformation.merchantSiteId","000001");
+						hmIn.put("customerId",						"000000000001");
+						hmIn.put("outAddress",						hmOut.get("outAddress"));
+						hmIn.put("fromCurrency",					hmOut.get("fromCurrency"));
+						hmIn.put("toCurrency",						hmOut.get("toCurrency"));
+						hmIn.put("fromAmount",						hmOut.get("fromAmount"));
+						hmIn.put("withdrawalRate",					hmOut.get("withdrawalRate"));
+						hmIn.put("toAmount",						hmOut.get("toAmount"));
+						hmIn.put("withdrawalFee",					hmOut.get("withdrawalFee"));
+						hmIn.put("withdrawalAmount",				hmOut.get("withdrawalAmount"));
+						hmIn.put("ReserveWID",						hmOut.get("ReserveWID"));
+						hmIn.put("pinNumber",						hmOut.get("pinNumber"));
+						hmIn.put("outPassword",						"12345678");
+						hmIn.put("Papers",							Papers);
+						hmIn.put("notifyUrl",						"http://10.30.1.51:8180/p2e/AsyncResult.jsp");
+						hmIn.put("key",								"9F2488BFAE5FB03B9B483FA1CF1EC94B3B4B2E52780A2B53ED67E581110CC980");
+						hmIn.put("initialVector",					"64750805549512089392625993734535");
+
+						hmOut										= VerseB.WithdrawReq(hmIn);
+						System.out.println(hmOut);
+						if ("SUCCESS".equals(hmOut.get("status"))) {
+							String txId		= hmOut.get("txId");
+							System.out.println("txId="+txId);
+						} else {
+							// 오류 처리 응답 수신
+							String errCd	= hmOut.get("errorInformation.errCd");
+							String reason	= hmOut.get("errorInformation.reason");
+							System.out.println("errCd="+errCd+" reason="+reason);
+						}
+					} else {
+						// 오류 처리 응답 수신
+						String errCd	= hmOut.get("errorInformation.errCd");
+						String reason	= hmOut.get("errorInformation.reason");
+						System.out.println("errCd="+errCd+" reason="+reason);
+					}
 				} else {
 					// 오류 처리 응답 수신
 					String errCd	= hmOut.get("errorInformation.errCd");
